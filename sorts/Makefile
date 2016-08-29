@@ -9,7 +9,7 @@ LIB=lib
 SRC=src
 INC=inc
 
-all: alldirs lib$(LIB_NAME) exchange selection bubble merge
+all: alldirs lib$(LIB_NAME) exchange selection bubble merge quick
 
 clean:
 	rm -rf $(OBJ) $(BIN) $(LIB)
@@ -32,6 +32,8 @@ selection: $(BIN)/selection
 bubble: $(BIN)/bubble
 
 merge: $(BIN)/merge
+
+quick: $(BIN)/quick
 
 lib$(LIB_NAME): $(LIB)/lib$(LIB_NAME).a
 
@@ -65,4 +67,10 @@ $(BIN)/merge: $(OBJ)/merge.o lib$(LIB_NAME) dir_bin
 
 $(OBJ)/merge.o: $(SRC)/merge.c dir_obj
 	$(CMPLR) $(OPTS) -c -o $(OBJ)/merge.o $(SRC)/merge.c
+
+$(BIN)/quick: $(OBJ)/quick.o lib$(LIB_NAME) dir_bin
+	$(CMPLR) $(OPTS) -o $(BIN)/quick $(OBJ)/quick.o -L. -l$(LIB_NAME) -Wl,-rpath,.
+
+$(OBJ)/quick.o: $(SRC)/quick.c dir_obj
+	$(CMPLR) $(OPTS) -c -o $(OBJ)/quick.o $(SRC)/quick.c
 
