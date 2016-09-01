@@ -1,76 +1,55 @@
-.PHONY: all clean
+BINARIES:=exchange selection bubble merge quick
+LIBRARIES:=subroutine
+CMPLR:=gcc
+CMMN_OPTS:=-std=c99
+CMPL_OPTS:=-I"inc"
+LINK_OPTS:=-L"lib"
+OBJ:=obj
+BIN:=bin
+LIB:=lib
+SRC:=src
+INC:=inc
 
-CMPLR=gcc
-OPTS=-std=c99 -I"inc" -L"lib"
-LIB_NAME=subtrn
-OBJ=obj
-BIN=bin
-LIB=lib
-SRC=src
-INC=inc
+LIB_BINDS:=$(patsubst %,-l%,$(LIBRARIES))
+LIB_HEADERS:=$(patsubst %,$(INC)/%.h,$(LIBRARIES))
+LIB_NAMES:=$(patsubst %,lib%,$(LIBRARIES))
+LIB_FILES:=$(patsubst %,$(LIB)/lib%.a,$(LIBRARIES))
+CMPL_OPTS:=$(CMMN_OPTS) $(CMPL_OPTS)
+LINK_OPTS:=$(CMMN_OPTS) $(LINK_OPTS)
 
-all: alldirs lib$(LIB_NAME) exchange selection bubble merge quick
+.PHONY: all clean libs bins report_libs
+.PRECIOUS: $(OBJ)/lib%.o $(OBJ)/%.o $(LIB)/lib%.a $(BIN)/%
+
+all: bins
+
+libs: report_libs $(LIB_FILES)
+
+report_libs:
+	@echo "lib names : $(LIB_NAMES)"
+	@echo "lib headers : $(LIB_HEADERS)"
+	@echo "lib files : $(LIB_FILES)"
+
+bins: $(BINARIES)
 
 clean:
 	rm -rf $(OBJ) $(BIN) $(LIB)
 
-alldirs: dir_bin dir_lib dir_obj
+%: $(BIN)/%
+	@echo "MADE $@"
 
-dir_bin:
-	mkdir -p $(BIN)
+$(BIN)/%: $(OBJ)/%.o $(LIB_FILES)
+	@if [ ! -d ./$(BIN)/ ] ; then echo "mkdir $(BIN)"; mkdir $(BIN) ; fi
+	$(CMPLR) $(LINK_OPTS) -o $@ $< -L. $(LIB_BINDS) -Wl,-rpath,.
 
-dir_lib:
-	mkdir -p $(LIB)
+$(LIB)/lib%.a: $(OBJ)/lib%.o
+	@if [ ! -d ./$(LIB)/ ] ; then echo "mkdir $(LIB)"; mkdir $(LIB) ; fi
+	ar cr $@ $<
+	ranlib $@
 
-dir_obj:
-	mkdir -p $(OBJ)
+$(OBJ)/%.o: $(SRC)/%.c $(LIB_HEADERS)
+	@if [ ! -d ./$(OBJ)/ ] ; then echo "mkdir $(OBJ)"; mkdir $(OBJ) ; fi
+	$(CMPLR) $(CMPL_OPTS) -c -o $@ $<
 
-exchange: $(BIN)/exchange
-
-selection: $(BIN)/selection
-
-bubble: $(BIN)/bubble
-
-merge: $(BIN)/merge
-
-quick: $(BIN)/quick
-
-lib$(LIB_NAME): $(LIB)/lib$(LIB_NAME).a
-
-$(LIB)/lib$(LIB_NAME).a: $(OBJ)/lib$(LIB_NAME).o dir_lib
-	ar cr $(LIB)/lib$(LIB_NAME).a $(OBJ)/lib$(LIB_NAME).o
-	ranlib $(LIB)/lib$(LIB_NAME).a
-
-$(OBJ)/lib$(LIB_NAME).o: $(SRC)/subroutine.c $(INC)/subroutine.h dir_obj
-	$(CMPLR) $(OPTS) -c -o $(OBJ)/lib$(LIB_NAME).o $(SRC)/subroutine.c
-
-$(BIN)/exchange: $(OBJ)/exchange.o lib$(LIB_NAME) dir_bin
-	$(CMPLR) $(OPTS) -o $(BIN)/exchange $(OBJ)/exchange.o -L. -l$(LIB_NAME) -Wl,-rpath,.
-
-$(OBJ)/exchange.o: $(SRC)/exchange.c dir_obj
-	$(CMPLR) $(OPTS) -c -o $(OBJ)/exchange.o $(SRC)/exchange.c
-
-$(BIN)/selection: $(OBJ)/selection.o lib$(LIB_NAME) dir_bin
-	$(CMPLR) $(OPTS) -o $(BIN)/selection $(OBJ)/selection.o -L. -l$(LIB_NAME) -Wl,-rpath,.
-
-$(OBJ)/selection.o: $(SRC)/selection.c dir_obj
-	$(CMPLR) $(OPTS) -c -o $(OBJ)/selection.o $(SRC)/selection.c
-
-$(BIN)/bubble: $(OBJ)/bubble.o lib$(LIB_NAME) dir_bin
-	$(CMPLR) $(OPTS) -o $(BIN)/bubble $(OBJ)/bubble.o -L. -l$(LIB_NAME) -Wl,-rpath,.
-
-$(OBJ)/bubble.o: $(SRC)/bubble.c dir_obj
-	$(CMPLR) $(OPTS) -c -o $(OBJ)/bubble.o $(SRC)/bubble.c
-
-$(BIN)/merge: $(OBJ)/merge.o lib$(LIB_NAME) dir_bin
-	$(CMPLR) $(OPTS) -o $(BIN)/merge $(OBJ)/merge.o -L. -l$(LIB_NAME) -Wl,-rpath,.
-
-$(OBJ)/merge.o: $(SRC)/merge.c dir_obj
-	$(CMPLR) $(OPTS) -c -o $(OBJ)/merge.o $(SRC)/merge.c
-
-$(BIN)/quick: $(OBJ)/quick.o lib$(LIB_NAME) dir_bin
-	$(CMPLR) $(OPTS) -o $(BIN)/quick $(OBJ)/quick.o -L. -l$(LIB_NAME) -Wl,-rpath,.
-
-$(OBJ)/quick.o: $(SRC)/quick.c dir_obj
-	$(CMPLR) $(OPTS) -c -o $(OBJ)/quick.o $(SRC)/quick.c
-
+$(OBJ)/lib%.o: $(SRC)/%.c $(INC)/%.h
+	@if [ ! -d ./$(OBJ)/ ] ; then echo "mkdir $(OBJ)"; mkdir $(OBJ) ; fi
+	$(CMPLR) $(CMPL_OPTS) -c -o $@ $<
