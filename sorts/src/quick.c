@@ -10,7 +10,13 @@
 // function of choosing prop element
 int choose_prop( int left, int right )
 	{
-	double	coerced_length = ( ( double )( right - left + 1 ) ) / ( 6.0 * INT_LIMIT );
+	static char		unseeded = 1;
+	double			coerced_length = ( ( double )( right - left + 1 ) ) / ( 6.0 * INT_LIMIT );
+
+	if( unseeded ) {
+		srand( time( NULL ) );
+		unseeded = 0;
+	}
 
 	left += ( int )( coerced_length * ( double )rand() );
 	right -= ( int )( coerced_length * ( double )rand() );
@@ -51,9 +57,7 @@ int main( void )
 	in = fopen( "input.txt", "r" );
 	out = fopen( "output.txt", "w" );
 
-	srand( time( NULL ) );
 	count = read( in, array, MAX_COUNT );
-
 	sort_quick( array, 0, count - 1 );
 	write( out, array, count );
 
