@@ -1,4 +1,4 @@
-BINARIES:=exchange selection bubble merge quick
+BINARIES:=exchange selection bubble merge quick heap
 LIBRARIES:=subroutine
 CMPLR:=gcc
 CMMN_OPTS:=-std=c99
